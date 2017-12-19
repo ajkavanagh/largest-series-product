@@ -14,7 +14,9 @@ pub enum Error {
 // and then multiplying by the new digit, we'll just recalculate the whole product.
 
 pub fn lsp_imperative(digits: &str, size: u32) -> Result<u32, Error> {
-    if size == 0 { return Ok(1) };
+    if size == 0 {
+        return Ok(1);
+    };
     let mut prod = vec![0u32; size as usize];
     let mut pointer: usize = 0;
     let mut max_value: u32 = 0;
@@ -22,31 +24,40 @@ pub fn lsp_imperative(digits: &str, size: u32) -> Result<u32, Error> {
     for c in digits.chars() {
         count += 1;
         prod[pointer] = c.to_digit(10).ok_or(Error::Digit)?;
-        pointer = (pointer + 1) % (size as usize);
+        pointer = pointer + 1;
+        if pointer >= size as usize {
+            pointer = 0;
+        }
         let mut sum: u32 = 1;
-        for p in 0..size as usize{
+        for p in 0..size as usize {
             sum *= prod[p];
         }
-        if sum > max_value { max_value = sum; }
+        if sum > max_value {
+            max_value = sum;
+        }
     }
-    if count < size { return Err(Error::Window); }
+    if count < size {
+        return Err(Error::Window);
+    }
     Ok(max_value)
 }
 
 
 pub fn lsp_functional(digits: &str, size: u32) -> Result<u32, Error> {
-    if size == 0 { return Ok(1) };
+    if size == 0 {
+        return Ok(1);
+    };
     digits
         .chars()
         .map(|c| c.to_digit(10).ok_or(Error::Digit))
         .collect::<Result<Vec<u32>, _>>()
         .and_then(|numbers| {
-            numbers
-                .windows(size as usize)
-                .map(|w| w.iter().product())
-                .max()
-                .ok_or(Error::Window)
-        })
+                      numbers
+                          .windows(size as usize)
+                          .map(|w| w.iter().product())
+                          .max()
+                          .ok_or(Error::Window)
+                  })
 }
 
 
@@ -69,9 +80,18 @@ fn main() {
     let sec1 = timeit!(10_000_000, {
         value = lsp_imperative("0123045678912345678987654111110", 6).unwrap();
     });
-    println!("LSP imperative/mutable: {}: {}", value, sec1);
+    println!("LSP small imperative/mutable: {}: {}", value, sec1);
     let sec2 = timeit!(10_000_000, {
         value = lsp_functional("0123045678912345678987654111110", 6).unwrap();
     });
-    println!("LSP functional: {}: {}", value, sec2);
+    println!("LSP small functional: {}: {}", value, sec2);
+    let sec3 = timeit!(10_000_000, {
+        value = lsp_imperative("012345678909827346598172346598172364019862359187256394871620384756102837564109827365401982736549817256", 20).unwrap();
+    });
+    println!("LSP large imperative/mutable: {}: {}", value, sec3);
+    let sec4 = timeit!(10_000_000, {
+        value = lsp_functional("012345678909827346598172346598172364019862359187256394871620384756102837564109827365401982736549817256", 20).unwrap();
+    });
+    println!("LSP large functional: {}: {}", value, sec4);
+
 }
