@@ -21,16 +21,21 @@ pub fn lsp_imperative(digits: &str, size: u32) -> Result<u32, Error> {
     let mut pointer: usize = 0;
     let mut max_value: u32 = 0;
     let mut count: u32 = 0;
+    let sizeu = size as usize;
     for c in digits.chars() {
         count += 1;
         prod[pointer] = c.to_digit(10).ok_or(Error::Digit)?;
         pointer = pointer + 1;
-        if pointer >= size as usize {
+        if pointer >= sizeu {
             pointer = 0;
         }
         let mut sum: u32 = 1;
-        for p in 0..size as usize {
-            sum *= prod[p];
+        for p in 0..sizeu {
+            let _v = prod[p];
+            if _v == 0 {
+                break;
+            }
+            sum *= _v;
         }
         if sum > max_value {
             max_value = sum;
